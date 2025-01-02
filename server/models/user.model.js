@@ -18,7 +18,7 @@ const UserSchema = new mongoose.Schema(
     },
     favourites: {
       type: [mongoose.Schema.Types.ObjectId],
-      ref: "Properties",
+      ref: "Property",
       default: [],
     },
     bookings: {

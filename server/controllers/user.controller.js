@@ -102,7 +102,7 @@ export const SignIn = async (req, res, next) => {
 
 export const bookProperty = async (req, res, next) => {
   try {
-    const userId = req.user._id;  
+    const userId = req.user._id;
     const { propertyId } = req.body;
 
     const property = await Property.findById(propertyId);
@@ -121,12 +121,77 @@ export const bookProperty = async (req, res, next) => {
       await user.save();
     }
 
-    if(user.bookings.includes(propertyId)){
-      return res.status(409).json({ message: "Property already"})
+    if (user.bookings.includes(propertyId)) {
+      return res.status(409).json({ message: "Property already" });
     }
 
     return res.status(200).json({ message: "property Booked!!" });
   } catch (err) {
     return next(err);
+  }
+};
+
+export const getBookedProperty = async (req, res, next) => {
+  try {
+    const userJWT = req.user;
+    const user = await User.findById(userJWT._id).populate({
+      path: "bookings",
+      model: "Property",
+    });
+
+    const bookedProperty = user.bookings;
+    return res.status(200).json(bookedProperty);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const addToFavourites = async (req, res, next) => {
+  try {
+    const { propertyId } = req.body;
+    console.log(propertyId);
+    
+    const userJWT = req.user;
+    const user = await User.findById(userJWT._id);
+    if (!user.favourites.includes(propertyId)) {
+      user.favourites.push(propertyId);
+      await user.save();
+    }
+    return res
+      .status(200)
+      .json({ message: "Property added to favourites successfully!!", user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const removeFromeFavourites = async (req, res, next) => {
+  try {
+    const { propertyId } = req.body;
+    const userJWT = req.user;
+    const user = await User.findById(userJWT._id);
+    user.favourites = user.favourites.filter((fav) => !fav.equals(propertyId));
+    await user.save();
+    return res
+      .status(200)
+      .json({ message: "Property removed from Favourites!!!", user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getUserFavourites = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    console.log(userId);
+    
+    const user = await User.findById(userId).populate("favourites").exec();
+    if (!user) {
+      return next(createError(404, "User Not Found"));
+    }
+    
+    return res.status(200).json(user?.favourites);
+  } catch (err) {
+    console.log(err);
   }
 };
