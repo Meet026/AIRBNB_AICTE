@@ -5,7 +5,6 @@ import Button from "./Button";
 import { UserSignIn } from "../api";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../redux/reducers/userSlice";
-import { openSnackbar } from "../redux/reducers/snackbarSlice";
 import button from "./Button";
 
 const Container = styled.div`
@@ -40,20 +39,69 @@ const TextButton = styled.div`
 `;
 
 const SignIn = ({ setOpenAuth }) => {
+  const dispatch = useDispatch();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const [ButtonDisabled, setButtonDisabled] = useState(false);
+
+  const validateInputs = () => {
+    if (email === "" || password === "") {
+      alert("Please fill all the fields");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSignIn = async () => {
+    // setButtonDisabled(true);
+    setButtonLoading(true);
+    if (validateInputs()) {
+      await UserSignIn({ email, password })
+        .then((res) => {
+          dispatch(loginSuccess(res.data));
+          setOpenAuth(false);
+        })
+        .catch((err) => {
+          alert(err.message);
+        })
+        .finally(() => {
+          setButtonLoading(false);
+          setButtonDisabled(false);
+        })
+    }
+  };
+
   return (
     <Container>
       <div>
         <Title>Welcome to Airbnb</Title>
         <Span>Please login with your details here</Span>
       </div>
-      <div style={{display: "flex", gap: "20px", flexDirection: "column"}}>
-        <TextInput label="Email Address" placeholder="Enter Your Email"></TextInput>
-        <TextInput label="Password" placeholder="Enter Your Password" password></TextInput>
+      <div style={{ display: "flex", gap: "20px", flexDirection: "column" }}>
+        <TextInput
+          label="Email Address"
+          placeholder="Enter Your Email"
+          value={email}
+          handelChange={(e) => setEmail(e.target.value)}
+        ></TextInput>
+        <TextInput
+          label="Password"
+          placeholder="Enter Your Password"
+          password
+          value={password}
+          handelChange={(e) => setPassword(e.target.value)}
+        ></TextInput>
         <TextButton>Forgot Password?</TextButton>
-        <Button text="Sign In"></Button>
+        <Button
+          text="Sign In"
+          isLoading={buttonLoading}
+          isDisabled={ButtonDisabled}
+          onClick={handleSignIn}
+        ></Button>
       </div>
     </Container>
-  )
+  );
 };
 
 export default SignIn;

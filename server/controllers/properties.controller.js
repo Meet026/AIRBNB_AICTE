@@ -58,32 +58,30 @@ export const getPropertyById = async (req, res, next) => {
 
 export const getAllProperties = async (req, res, next) => {
   try {
-    const { limit, sortBy, order } = req.query;
+    const { location, checkIn, checkOutDate } = req.query;
 
-    // Default pagination and sorting
-    const options = {
-      limit: parseInt(limit) || 10,
-      sort: { [sortBy || "createdAt"]: order === "desc" ? -1 : 1 },
-    };
+    // Building the filter object dynamically
+    const filter = {};
+    if (location) filter.location = { $regex: location, $options: "i" }; // Case-insensitive search for location
+    if (checkIn) filter.availableFrom = { $lte: new Date(checkIn) }; // Available from before or on check-in date
+    if (checkOutDate) filter.availableTo = { $gte: new Date(checkOutDate) }; // Available to after or on check-out date
 
-    // Fetch all properties with pagination and sorting
-    const properties = await Property.find({}, null, options);
+    // Fetch all properties with filtering
+    const properties = await Property.find(filter);
 
-    const total = await Property.countDocuments();
+    const total = await Property.countDocuments(filter);
 
     return res.status(200).json({
       success: true,
       message: "Properties fetched successfully!",
       properties,
-      pagination: {
-        total,
-        limit: parseInt(limit) || 10,
-      },
+      total,
     });
   } catch (err) {
     next(err);
   }
 };
+
 
 export const updateProperty = async (req, res, next) => {
   try {

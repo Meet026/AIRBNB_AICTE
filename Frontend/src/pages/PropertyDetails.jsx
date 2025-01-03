@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { DatePicker } from "@mui/lab";
 import { CircularProgress, Rating, TextField } from "@mui/material";
 import styled from "styled-components";
 import { useDispatch } from "react-redux";
-import { bookProperty } from "../api";
-import { openSnackbar } from "../redux/reducers/snackbarSlice";
+import { bookProperty, getPropertyById } from "../api";
 import Button from "../componnents/Button";
 import { Spa } from "@mui/icons-material";
 
@@ -76,48 +75,69 @@ const BookingContainer = styled.div`
 `;
 
 const PropertyDetails = () => {
-  const property = {
-    _id: "12345",
-    img: "https://images.pexels.com/photos/29848858/pexels-photo-29848858/free-photo-of-scenic-twilight-view-of-lakefront-in-lombardy.jpeg?auto=compress&cs=tinysrgb&w=600",
-    title: "Beautiful Beach House",
-    desc: "A stunning house located near the beach with amazing sea views.",
-    rating: "1.5",
-    price: {
-      org: 250,
-      mrp: 300,
-      off: 17,
-    },
-  };
+  const { id } = useParams();
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [property, setProperty] = useState();
+  const [loading, setLoading] = useState(false);
+
+  console.log("id", id);
+  
+  const getPropertyDetailsById = async () => {
+    setLoading(true);
+    try {
+      const res = await getPropertyById(id); // Make sure API is correct
+      console.log("API Response:", res.data); // Debug the response
+      setProperty(res.data.property); // Adjust based on the actual response structure
+    } catch (error) {
+      console.error("Error fetching property details:", error);  // Log error
+    } finally {
+      setLoading(false);  // Always stop loading
+    }
+  }
+
+  useEffect(() => {
+    getPropertyDetailsById();
+  }, [id]);  // Add id as a dependency
 
   return (
-    <Container>
-      <Image src={property?.img}></Image>
-      <Right>
-        <Title>{property?.title}</Title>
-        <Desc>{property.desc}</Desc>
-        <Price>
-          ${property?.price.org}
-          <Span>${property?.price.mrp}</Span>
-          <Percent>${property?.price.off}% Off</Percent>
-        </Price>
-        <RatingContainer>
-          <Rating value={property.rating} readOnly />
-          <span>({property.rating})</span>
-        </RatingContainer>
-        <BookingContainer>
-          <DatePicker
-            label="Start Date"
-            renderInput={(params) => <TextField {...params} />}
-          />
-          <DatePicker
-            label="End Date"
-            renderInput={(params) => <TextField {...params} />}
-          />
-
-          <Button variant="contained" color="secondary" text="Book Now"></Button>
-        </BookingContainer>
-      </Right>
-    </Container>
+    <>
+      {loading ? (
+        <CircularProgress />
+      ) : (
+        <Container>
+          <Image src={property?.img} alt={property?.title} />
+          <Right>
+            <Title>{property?.title}</Title>
+            <Desc>{property?.desc}</Desc>
+            <Price>
+              ${property?.price.org}
+              <Span>${property?.price.mrp}</Span>
+              <Percent>{property?.price.off}% Off</Percent>
+            </Price>
+            <RatingContainer>
+              <Rating value={property?.rating} readOnly />
+              <span>({property?.rating})</span>
+            </RatingContainer>
+            <BookingContainer>
+              <DatePicker
+                label="Start Date"
+                renderInput={(params) => <TextField {...params} />}
+              />
+              <DatePicker
+                label="End Date"
+                renderInput={(params) => <TextField {...params} />}
+              />
+              <Button
+                variant="contained"
+                color="secondary"
+                text="Book Now"
+              />
+            </BookingContainer>
+          </Right>
+        </Container>
+      )}
+    </>
   );
 };
 

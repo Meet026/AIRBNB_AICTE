@@ -142,7 +142,9 @@ const TextButton = styled.div`
   }
 `;
 
-const Navbar = ({setOpenAuth, openAuth}) => {
+const Navbar = ({ setOpenAuth, openAuth, currentUser }) => {
+  const dispatch = useDispatch();
+
   const [isOpen, setIsOpen] = useState(false);
   return (
     <Nav>
@@ -181,8 +183,36 @@ const Navbar = ({setOpenAuth, openAuth}) => {
           <Navlink to="/contact">Contact</Navlink>
           <Navlink to="/gallery">Gallery</Navlink>
         </NavItems>
+
         <ButtonContainer>
-          <Button type="secondary" text="SignIn" small onClick={() => setOpenAuth(!openAuth)}></Button>
+          {currentUser ? (
+            <>
+                <Navlink to="/favorite">
+                  <FavoriteBorder sx={{ color: "inherit", fontSize: "28px" }} />
+                </Navlink>
+                <Avatar
+                  src={currentUser?.img}
+                  sx={{ color: "inherit", fontSize: "28px" }}
+                >
+                  {currentUser?.name[0]}
+                </Avatar>
+
+                <TextButton
+                  onClick={() => dispatch(logout())}
+                  style={{ color: "white" }}
+                >
+                  Logout
+                </TextButton>
+            
+            </>
+          ) : (
+            <Button
+              type="secondary"
+              text="SignIn"
+              small
+              onClick={() => setOpenAuth(!openAuth)}
+            ></Button>
+          )}
         </ButtonContainer>
       </NavbarContainer>
     </Nav>

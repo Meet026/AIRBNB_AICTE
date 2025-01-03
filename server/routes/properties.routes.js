@@ -11,8 +11,8 @@ import {
 const router = express.Router();
 
 router.post("/create-property", verifyToken, createProperty);
-router.get("/get-property/:id", verifyToken, getPropertyById);
-router.get("/get-property", verifyToken, getAllProperties);
+router.get("/get-property/:id", getPropertyById);
+router.get("/get-property",  getAllProperties);
 router.patch("/update-property/:id", verifyToken, updateProperty);
 router.delete("/delete-property/:id", verifyToken, deleteProperty);
 

@@ -6,7 +6,6 @@ import { useState } from "react";
 import Home from "./pages/Home";
 import Authentication from "./pages/Authentication";
 import { useSelector } from "react-redux";
-import ToastMessage from "./componnents/ToastMessage";
 import PropertyDetails from "./pages/PropertyDetails";
 import PropertyListing from "./pages/PropertyListing";
 import background from "./utils/Images/Background.jpg";
@@ -30,12 +29,13 @@ const Container = styled.div`
 `;
 
 function App() {
+  const {currentUser} = useSelector((state) => state.user);
   const [openAuth, setOpenAuth] = useState(false);
   return (
     <ThemeProvider theme={lightTheme}>
       <BrowserRouter>
         <Container background={background}>
-          <Navbar setOpenAuth={setOpenAuth} openAuth={openAuth} />
+          <Navbar setOpenAuth={setOpenAuth} openAuth={openAuth} currentUser={currentUser}/>
           <Routes>
             <Route path="/" exact element={<Home />}></Route>
             <Route path="/contact" exact element={<ContactForm />}></Route>

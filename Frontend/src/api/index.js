@@ -4,9 +4,10 @@ const API = axios.create({ baseURL: "http://localhost:8080/api/" });
 
 export const UserSignUp = async (data) => await API.post("user/SignUp", data);
 
-export const UserSignin = async (data) => await API.post("user/SignIn", data);
+export const UserSignIn = async (data) => await API.post("user/SignIn", data);
 
 export const getAllProperties = async (filter) =>
+  
   await API.get(
     `property/get-property?limit=${filter}`
   );

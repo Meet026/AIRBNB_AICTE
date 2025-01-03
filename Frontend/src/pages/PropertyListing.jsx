@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import PropertyCard from "../componnents/Cards/PropertyCard";
-import { getAllCourses, getAllProperty } from "../api";
+import { getAllCourses, getAllProperties } from "../api";
 import { CircularProgress } from "@mui/material";
 import { useLocation } from "react-router-dom";
 
@@ -45,11 +45,12 @@ const PropertyListing = () => {
   const location = useLocation();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [filter, setFilter] = useState()
-
+  const { location: loc, checkInDate, checkOutDate } = location.state || {};
+  const filter = loc ? `location=${loc}` : null;
+  
   const getproperties = async () => {
     setLoading(true);
-    await getAllProperty().then((res) => {
+    await getAllProperties(filter).then((res) => {
       setProperties(res.data);
       setLoading(false);
     });
@@ -66,9 +67,10 @@ const PropertyListing = () => {
       ) : (
         <Property>
           <CardWrapper>
-            {properties.map((property) => (
-              <PropertyCard property={property} />
-            ))}
+            {properties.properties &&
+              properties.properties.map((property) => (
+                <PropertyCard key={property._id} property={property} />
+              ))}
           </CardWrapper>
         </Property>
       )}

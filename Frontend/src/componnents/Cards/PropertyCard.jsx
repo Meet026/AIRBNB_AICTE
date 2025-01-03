@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {  useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { CircularProgress, Rating } from "@mui/material";
 import styled from "styled-components";
 import {
@@ -8,13 +8,7 @@ import {
   FavoriteRounded,
 } from "@mui/icons-material";
 import { useDispatch } from "react-redux";
-import { openSnackbar } from "../../redux/reducers/snackbarSlice";
-import {
-  addToCart,
-  addToFavourite,
-  deleteFromFavourite,
-  getFavourite,
-} from "../../api";
+import { getFavourite } from "../../api";
 
 const Card = styled.div`
   max-width: 250px;
@@ -140,28 +134,101 @@ const Percent = styled.div`
 `;
 
 const PropertyCard = ({ property }) => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [favorite, setFavorite] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+
+  const addToFavorite = async () => {
+    setFavoriteLoading(true);
+    const token = localStorage.getItem("airbnb-app-token");
+    await addToFavorite(token, { propertyId: property?._id })
+      .then((res) => {
+        setFavorite(true);
+      })
+      .catch((err) => {
+        alert(err.message);
+      })
+      .finally(() => {
+        setFavoriteLoading(false);
+      });
+  };
+
+  const removeFavorite = async () => {
+    setFavoriteLoading(true);
+    const token = localStorage.getItem("airbnb-app-token");
+    await addToFavorite(token, { propertyId: property?._id })
+      .then((res) => {
+        setFavorite(false);
+      })
+      .catch((err) => {
+        alert(err.message);
+      })
+      .finally(() => {
+        setFavoriteLoading(false);
+      });
+  };
+
+  const checkFavorite = async () => {
+    setFavoriteLoading(true);
+    const token = localStorage.getItem("airbnb-app-token");
+    await getFavourite(token, { propertyId: property?._id })
+      .then((res) => {
+        const isFavorite = res.data?.some(
+          (favorite) => favorite._id === property._id
+        );
+        setFavorite(isFavorite);
+        setFavoriteLoading(false);
+      })
+      .catch((err) => {
+        alert(err.message);
+      })
+      .finally(() => {
+        setFavoriteLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    checkFavorite();
+  }, []);
   return (
     <Card>
       <Top>
-        <Image src={property?.img} />
+        <Image
+          src={property?.img || "/placeholder.jpg"}
+          alt={property?.title}
+        />
         <Menu>
-          <MenuItem>
-            <FavoriteBorder sx={{ fontSize: "20px" }} />
+          <MenuItem onClick={() => {(favorite ? removeFavorite() : addToFavorite())}}>
+            {favoriteLoading ? (
+              <CircularProgress sx={{ fontSize: "20px" }} />
+            ) : (
+              <>
+                {favorite ? (
+                  <FavoriteRounded sx={{ fontSize: "20px" }} />
+                ) : (
+                  <FavoriteBorder sx={{ fontSize: "20px" }} />
+                )}
+              </>
+            )}
           </MenuItem>
         </Menu>
         <Rate>
-          <Rating value={property?.rating} sx={{ fontSize: "14px" }} />
+          <Rating
+            value={property?.rating || 0}
+            sx={{ fontSize: "14px" }}
+            readOnly
+          />
         </Rate>
       </Top>
       <Details onClick={() => navigate(`/properties/${property._id}`)}>
-        <Title>{property?.title}</Title>
-        <Desc>{property?.desc}</Desc>
-        <Location>{property?.location}</Location>
+        <Title>{property?.title || "No Title Available"}</Title>
+        <Desc>{property?.desc || "No Description Available"}</Desc>
+        <Location>{property?.location || "Unknown Location"}</Location>
         <Price>
-          ${property?.price.org}
-          <Strike>${property?.price.mrp}</Strike>
-          <Percent>${property?.price.off}% Off</Percent>
+          ${property?.price?.org || "N/A"}
+          <Strike>${property?.price?.mrp || "N/A"}</Strike>
+          <Percent>{property?.price?.off || 0}% Off</Percent>
         </Price>
       </Details>
     </Card>
